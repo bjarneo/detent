@@ -31,6 +31,10 @@ class Prefs(ctx: Context) {
 
     fun savePos(pos: Int) = sp.edit { putInt("pos", pos) }
 
+    var pullToLaunch: Boolean
+        get() = sp.getBoolean("pullToLaunch", false)
+        set(v) = sp.edit { putBoolean("pullToLaunch", v) }
+
     var sound: Boolean
         get() = sp.getBoolean("sound", true)
         set(v) = sp.edit { putBoolean("sound", v) }

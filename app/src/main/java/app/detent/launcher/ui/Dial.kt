@@ -59,11 +59,28 @@ fun DialCanvas(s: LauncherState, pal: Palette) {
         if (s.ob == Step.WELCOME || s.ob == Step.APPS) 0f else 1f, tween(500), label = "dialAlpha",
     )
 
+    val pull by animateFloatAsState(s.pullProgress, tween(90), label = "pullProgress")
+    val hint = measurer.measure("release to open", regular)
     Canvas(Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }) {
         val g = Geo(s.radius, u.cy)
         drawMarks(s.pos, g, u.k, pal, layout, left)
         drawLabels(s.pos, g, u.k, pal, layout, left, names, dots, hide, scrub != null, measurer, regular, medium)
         drawNotch(s.pawl, g, u.k, pal, layout.markers, left)
+        if (pull > .01f) {
+            val x = (if (left) W - 226f else 226f) * u.k
+            val r = 16f * u.k
+            drawArc(
+                pal.accent, -90f, (if (left) 1f else -1f) * 360f * pull, false,
+                Offset(x - r, u.cy * u.k - r), Size(r * 2, r * 2),
+                alpha = if (s.pullArmed) 1f else .5f, style = Stroke(1.5f * u.k),
+            )
+            if (s.pullArmed) {
+                drawText(
+                    hint, pal.accent,
+                    Offset(if (left) (W - 28f) * u.k - hint.size.width else 28f * u.k, (u.cy + 42f) * u.k),
+                )
+            }
+        }
     }
 }
 

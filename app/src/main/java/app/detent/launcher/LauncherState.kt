@@ -73,6 +73,7 @@ interface Host {
 private class Drag(val x0: Float, val y0: Float, var y: Float, val t0: Long, val zone: Zone) {
     var moved = false
     var scrub = false
+    var pull: PullToLaunch? = null
     val samples = ArrayDeque<Pair<Long, Float>>()
 }
 
@@ -160,6 +161,13 @@ class LauncherState(
     var now by mutableLongStateOf(System.currentTimeMillis())
         private set
     var resumed by mutableStateOf(false)
+        private set
+
+    var pullToLaunch by mutableStateOf(prefs.pullToLaunch)
+        private set
+    var pullProgress by mutableFloatStateOf(0f)
+        private set
+    var pullArmed by mutableStateOf(false)
         private set
 
     var sound by mutableStateOf(prefs.sound)
@@ -256,10 +264,12 @@ class LauncherState(
     }
 
     fun onPause() {
+        onCancel()
         resumed = false
     }
 
     fun onStop() {
+        clearPull()
         cancelPress()
         if (drag?.scrub == true) {
             drag = null
@@ -402,11 +412,16 @@ class LauncherState(
         return if (k.roundToInt() == pos.roundToInt()) Zone.Selected else Zone.Dial
     }
 
-    fun onDown(x: Float, y: Float) {
+    fun onDown(x: Float, y: Float, touchSlop: Float, pullDistance: Float) {
         if (blocked()) return
         val zone = if (ob == null) zoneAt(x, y) else Zone.None
         val t = SystemClock.uptimeMillis()
         val d = Drag(x, y, y, t, zone)
+        if (pullToLaunch && ob == null && (zone == Zone.Dial || zone == Zone.Selected)) {
+            d.pull = PullToLaunch(x, y, t, left, touchSlop, pullDistance).also {
+                it.update(x, y, t, curApp()?.key)
+            }
+        }
         d.samples.addLast(t to pos)
         drag = d
         spin = Spin.Drag
@@ -428,22 +443,50 @@ class LauncherState(
             d.moved = true
             cancelPress()
         }
-        pos -= (y - d.y) / GAP
+        // Once armed, hold the selected row. A vertical move cancels and resumes rotation.
+        val p = d.pull
+        val wasArmed = pullArmed
+        if (wasArmed) {
+            p?.update(x, y, SystemClock.uptimeMillis(), curApp()?.key)
+            if (p?.armed != true) clearPull()
+        }
+        if (!pullArmed) pos -= (y - d.y) / GAP
         d.y = y
         val t = SystemClock.uptimeMillis()
         d.samples.addLast(t to pos)
         while (d.samples.size > 2 && t - d.samples.first().first > 90) d.samples.removeFirst()
+        if (!d.scrub && p != null) {
+            if (!wasArmed) p.update(x, y, t, curApp()?.key)
+            pullProgress = p.progress
+            pullArmed = p.armed
+            if (pullArmed && !wasArmed) {
+                pos = pos.roundToInt().toFloat()
+                // Snapping into the notch must not contribute artificial fling velocity.
+                d.samples.clear()
+                d.samples.addLast(t to pos)
+                fb.arm()
+            }
+        }
     }
 
     fun onUp(x: Float, y: Float) {
         cancelPress()
         val d = drag ?: return
         drag = null
+        val p = d.pull
+        val wasArmed = pullArmed
+        clearPull()
         if (d.scrub) {
             endScrub()
             return
         }
         val t = SystemClock.uptimeMillis()
+        p?.update(x, y, t, curApp()?.key, release = true)
+        if (wasArmed && p?.armed == true && p.key == curApp()?.key && !blocked()) {
+            jumpTo(pos.roundToInt().toFloat())
+            launchSelected()
+            return
+        }
         if (!d.moved && t - d.t0 < 450) {
             target = pos.roundToInt().toFloat()
             spin = Spin.Settle
@@ -458,7 +501,13 @@ class LauncherState(
         run()
     }
 
+    private fun clearPull() {
+        pullProgress = 0f
+        pullArmed = false
+    }
+
     fun onCancel() {
+        clearPull()
         cancelPress()
         val d = drag ?: return
         drag = null
@@ -539,6 +588,8 @@ class LauncherState(
         lastIdx = li.roundToInt()
         spin = Spin.Drag
         drag?.scrub = true
+        drag?.pull = null
+        clearPull()
         fb.letter()
         fb.click(true)
         scrub = letters
@@ -719,6 +770,12 @@ class LauncherState(
         fb.sound = sound
         prefs.sound = sound
         tap()
+    }
+
+    fun togglePullToLaunch() {
+        tap()
+        pullToLaunch = !pullToLaunch
+        prefs.pullToLaunch = pullToLaunch
     }
 
     fun toggleHaptics() {

@@ -263,6 +263,7 @@ private fun HandArt(pal: Palette, left: Boolean) {
 private fun GestureLayer(s: LauncherState) {
     val u = LocalUnits.current
     val k by rememberUpdatedState(u.k)
+    val pullDistance by rememberUpdatedState(40f * LocalDensity.current.density / u.k)
     Box(
         Modifier.fillMaxSize()
             // The dial sits on a screen edge. Keep the system back swipe off the rows around the notch.
@@ -274,19 +275,24 @@ private fun GestureLayer(s: LauncherState) {
             }
             .pointerInput(s) {
                 awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val down = awaitFirstDown()
                     val kk = k
-                    s.onDown(down.position.x / kk, down.position.y / kk)
+                    s.onDown(
+                        down.position.x / kk, down.position.y / kk,
+                        viewConfiguration.touchSlop / kk, pullDistance,
+                    )
                     var ended = false
                     try {
                         while (true) {
                             val ev = awaitPointerEvent()
                             val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
-                            if (ch.changedToUp() || !ch.pressed) {
+                            if (ch.isConsumed || ev.changes.size != 1) break
+                            if (ch.changedToUp()) {
                                 s.onUp(ch.position.x / kk, ch.position.y / kk)
                                 ended = true
                                 break
                             }
+                            if (!ch.pressed) break
                             if (ch.positionChanged()) {
                                 s.onMove(ch.position.x / kk, ch.position.y / kk)
                                 ch.consume()

@@ -63,6 +63,9 @@ class Feedback(private val ctx: Context) {
     /** A long press or an app open. */
     fun heavy() = predefined(VibrationEffect.EFFECT_HEAVY_CLICK)
 
+    /** The inward pull is armed, distinct from the dial ticks. */
+    fun arm() = predefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
+
     /** An app goes on or off the dial. */
     fun double() = predefined(VibrationEffect.EFFECT_DOUBLE_CLICK)
 

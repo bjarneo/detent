@@ -78,10 +78,11 @@ Detent crops the centre of the photo to the shape of your screen and keeps a cop
 
 ## Settings
 
-The `feel` step has 4 switches:
+The `feel` step has 5 switches:
 
 | Switch | What it does |
 | --- | --- |
+| `pull to launch` | Off by default. Scroll to an app, slow down, then pull about 40dp toward the screen centre. A ring, `release to open`, and a double haptic confirm it is armed. Release to open; move outward or resume scrolling to cancel. The direction mirrors with the dial side. |
 | `sound` | Plays a short click for each app that passes the notch. The phone mutes it in silent or vibrate mode. |
 | `haptics` | Gives a light tick for each app and a firmer tick for each letter. It follows the system touch feedback setting. |
 | `dots` | Shows an accent dot on apps with new notifications. The dot clears when you open the app. This switch needs notification access. |
