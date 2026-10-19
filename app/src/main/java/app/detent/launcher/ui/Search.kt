@@ -118,17 +118,18 @@ fun SearchSheet(s: LauncherState, pal: Palette) {
                             },
                             contentAlignment = Alignment.CenterStart,
                         ) {
-                            if (q.isEmpty()) Txt(if (s.pick) stringResource(R.string.pick_a_quick_app) else stringResource(R.string.search_apps), 20f, pal.muted, weight = FontWeight.Light, spacing = -.03f, maxLines = 1)
+                            if (q.isEmpty()) Txt(if (s.pickFavorites) stringResource(R.string.favorites) else if (s.pick) stringResource(R.string.pick_a_quick_app) else stringResource(R.string.search_apps), 20f, pal.muted, weight = FontWeight.Light, spacing = -.03f, maxLines = 1)
                             inner()
                         }
                     },
                 )
                 Box(Modifier.height(u.dp(44f)).tap { s.closeSearch() }.padding(horizontal = u.dp(10f)), contentAlignment = Alignment.Center) {
-                    Txt(stringResource(R.string.cancel), 13f, pal.muted2)
+                    Txt(stringResource(if (s.pickFavorites) R.string.done else R.string.cancel), 13f, pal.muted2)
                 }
             }
             val n = s.dialApps.size
             val count = when {
+                s.pickFavorites -> stringResource(R.string.favorites_count, s.favoriteKeys.size)
                 q.isNotBlank() -> pluralStringResource(R.plurals.matches, results.size, results.size)
                 s.pick -> stringResource(R.string.tap_an_app_for_the_quick_button)
                 else -> stringResource(R.string.count_apps_other_on_dial, results.size, n)
@@ -169,7 +170,7 @@ private fun ResultRow(s: LauncherState, pal: Palette, app: AppEntry, highlight: 
     ) {
         Row(
             Modifier.weight(1f).fillMaxHeight()
-                .tap { if (s.pick) s.setQuick(app) else s.openFromSearch(app, centre / u.k) }
+                .tap { if (s.pickFavorites) s.toggleFavorite(app) else if (s.pick) s.setQuick(app) else s.openFromSearch(app, centre / u.k) }
                 .padding(horizontal = u.dp(16f)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(u.dp(10f)),
@@ -177,7 +178,12 @@ private fun ResultRow(s: LauncherState, pal: Palette, app: AppEntry, highlight: 
             Txt(app.label, 16f, pal.fg, Modifier.weight(1f, fill = false), maxLines = 1)
             if (s.hasDot(app)) Box(Modifier.size(u.dp(5f)).clip(CircleShape).background(pal.accent))
         }
-        if (s.pick) {
+        if (s.pickFavorites) {
+            val selected = app.key in s.favoriteKeys
+            Box(Modifier.height(u.dp(44f)).tap { s.toggleFavorite(app) }.padding(horizontal = u.dp(16f)), contentAlignment = Alignment.Center) {
+                Txt(stringResource(if (selected) R.string.remove_favorite else R.string.add_favorite), 12f, if (selected) pal.accent else pal.fg)
+            }
+        } else if (s.pick) {
             if (app.key == s.quickKey) Txt(stringResource(R.string.quick_app), 11f, pal.muted, Modifier.padding(horizontal = u.dp(16f)), spacing = .04f)
         } else if (onDial) {
             Txt(stringResource(R.string.on_dial), 11f, pal.muted, Modifier.padding(horizontal = u.dp(16f)), spacing = .04f)

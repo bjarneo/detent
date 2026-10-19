@@ -370,6 +370,7 @@ private fun Clock(s: LauncherState, pal: Palette) {
 
 @Composable
 private fun SearchButton(s: LauncherState, pal: Palette) {
+    if (s.favoritesExpanded) return
     val u = LocalUnits.current
     val homeIdle = s.ob == null && !s.search && s.open == null
     val shown = homeIdle && s.scrub == null
@@ -379,7 +380,7 @@ private fun SearchButton(s: LauncherState, pal: Palette) {
         val shape = RoundedCornerShape(50)
         Row(
             Modifier.height(u.dp(44f)).clip(shape).background(pal.btnBg).border(u.dp(1f), pal.rim2, shape)
-                .tap(enabled = homeIdle) { s.openSearch() }
+                .combinedClickable(enabled = shown, onClick = s::openSearch, onLongClick = s::toggleFavorites)
                 .padding(start = u.dp(14f), end = u.dp(18f)),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(u.dp(10f)),

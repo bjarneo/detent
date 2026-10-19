@@ -58,6 +58,19 @@ class Prefs(ctx: Context) {
         get() = sp.getString("quick", null)
         set(v) = sp.edit { putString("quick", v) }
 
+    /** Whether the favorites panel should stay expanded when returning to the launcher. */
+    var favoritesExpanded: Boolean
+        get() = sp.getBoolean("favoritesExpanded", false)
+        set(v) = sp.edit { putBoolean("favoritesExpanded", v) }
+
+    /** Ordered favorites, kept separately from the wheel and the quick button. */
+    var favorites: List<String>
+        get() = runCatching {
+            val array = org.json.JSONArray(sp.getString("favorites", "[]"))
+            (0 until array.length()).map { array.getString(it) }.distinct().take(FavoriteSelection.LIMIT)
+        }.getOrDefault(emptyList())
+        set(v) = sp.edit { putString("favorites", org.json.JSONArray(v.distinct().take(FavoriteSelection.LIMIT)).toString()) }
+
     /** The theme and side that the system wallpaper shows now. */
     var appliedWall: String?
         get() = sp.getString("appliedWall", null)

@@ -72,7 +72,17 @@
         <item quantity="other">%d resultados</item>
     </plurals>
     <string name="tap_to_open_position">%1$s / %2$d · toca para abrir</string>
+    <string name="favorites">favoritos</string>
+    <string name="favorites_count">%1$d / 5 · toca para añadir o quitar</string>
+    <string name="favorites_limit">máximo 5 favoritos; quita uno primero</string>
+    <string name="add_favorite">+ añadir</string>
+    <string name="remove_favorite">− quitar</string>
+    <string name="choose_favorites">+ elegir apps</string>
+    <string name="edit_favorites">editar favoritos</string>
     <string name="clock_unavailable">no hay una app de reloj disponible</string>
     <string name="calendar_unavailable">no hay una app de calendario disponible</string>
     <string name="open_clock">abrir reloj</string>
+    <string name="edit_short">editar</string>
+    <string name="keep_favorites_open">mantener favoritos abiertos</string>
+    <string name="close_favorites">cerrar favoritos</string>
 </resources>

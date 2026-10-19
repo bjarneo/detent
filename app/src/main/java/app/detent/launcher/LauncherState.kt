@@ -189,6 +189,15 @@ class LauncherState(
     var quickKey by mutableStateOf(prefs.quick)
         private set
     val quickApp by derivedStateOf { quickKey?.let { k -> repo.apps.firstOrNull { it.key == k } } }
+    var favoriteKeys by mutableStateOf(prefs.favorites)
+        private set
+    val favoriteApps by derivedStateOf {
+        favoriteKeys.mapNotNull { key -> repo.apps.firstOrNull { it.key == key } }
+    }
+    var favoritesExpanded by mutableStateOf(prefs.favoritesExpanded)
+        private set
+    var pickFavorites by mutableStateOf(false)
+        private set
     var open by mutableStateOf<OpenApp?>(null)
         private set
     var menu by mutableStateOf<QuickMenu?>(null)
@@ -274,6 +283,8 @@ class LauncherState(
             return
         }
         val installed = apps.mapTo(HashSet()) { it.key }
+        val favorites = favoriteKeys.filter { it in installed }
+        if (favorites != favoriteKeys) saveFavorites(favorites)
         val kept = dialKeys.filterTo(HashSet()) { it in installed }
         if (kept.isEmpty()) {
             dialKeys = repo.defaults()
@@ -1129,6 +1140,7 @@ class LauncherState(
         tap()
         query = ""
         pick = false
+        pickFavorites = false
         search = true
     }
 
@@ -1146,12 +1158,48 @@ class LauncherState(
 
     fun searchEnter() {
         val app = matches(query).firstOrNull() ?: return
-        if (pick) setQuick(app) else openFromSearch(app, 200f)
+        if (pickFavorites) toggleFavorite(app) else if (pick) setQuick(app) else openFromSearch(app, 200f)
     }
 
     /** Opens a search result. [y] is the row centre in design units. */
     fun openFromSearch(app: AppEntry, y: Float) {
         openApp(app.display, app.key, app.pkgUser, Pose(28f, y, 0f, 16f / 44f, 0f), "", false) {
+            host.launchApp(app, it)
+        }
+    }
+
+    fun toggleFavorites() {
+        if (blocked() || ob != null) return
+        tap()
+        favoritesExpanded = !favoritesExpanded
+        prefs.favoritesExpanded = favoritesExpanded
+    }
+
+    fun manageFavorites() {
+        if (blocked() || ob != null) return
+        openSearch()
+        pickFavorites = true
+    }
+
+    fun toggleFavorite(app: AppEntry) {
+        val before = favoriteKeys
+        val next = FavoriteSelection.toggle(before, app.key)
+        if (next == before) {
+            showToast(context.getString(R.string.favorites_limit))
+            return
+        }
+        tap()
+        saveFavorites(next)
+    }
+
+    private fun saveFavorites(keys: List<String>) {
+        favoriteKeys = keys.distinct().take(FavoriteSelection.LIMIT)
+        prefs.favorites = favoriteKeys
+    }
+
+    fun launchFavorite(app: AppEntry, x: Float, y: Float) {
+        if (blocked() || ob != null) return
+        openApp(app.display, app.key, app.pkgUser, Pose(x, y, 0f, 13f / 44f, 0f), "", false) {
             host.launchApp(app, it)
         }
     }
@@ -1174,6 +1222,7 @@ class LauncherState(
         fb.heavy()
         query = ""
         pick = true
+        pickFavorites = false
         search = true
     }
 

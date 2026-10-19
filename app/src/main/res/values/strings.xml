@@ -73,7 +73,17 @@
         <item quantity="other">%d matches</item>
     </plurals>
     <string name="tap_to_open_position">%1$s / %2$d · tap to open</string>
+    <string name="favorites">favorites</string>
+    <string name="favorites_count">%1$d / 5 · tap to add or remove</string>
+    <string name="favorites_limit">up to 5 favorites; remove one first</string>
+    <string name="add_favorite">+ add</string>
+    <string name="remove_favorite">− remove</string>
+    <string name="choose_favorites">+ choose apps</string>
+    <string name="edit_favorites">edit favorites</string>
     <string name="clock_unavailable">no clock app available</string>
     <string name="calendar_unavailable">no calendar app available</string>
     <string name="open_clock">open clock</string>
+    <string name="edit_short">edit</string>
+    <string name="keep_favorites_open">keep favorites open</string>
+    <string name="close_favorites">close favorites</string>
 </resources>
