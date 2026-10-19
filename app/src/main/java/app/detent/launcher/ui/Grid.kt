@@ -7,6 +7,11 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -494,7 +499,28 @@ private fun GridDate(s: LauncherState, pal: Palette, alpha: Float) {
     }
     Txt(
         text, 12f, pal.muted2,
-        Modifier.place(u, RX, s.readY + 92f).graphicsLayer { this.alpha = alpha },
+        Modifier.place(u, RX, s.readY + 92f).height(u.dp(44f)).graphicsLayer { this.alpha = alpha }
+            .combinedClickable(
+                enabled = s.ob == null && !s.search && s.open == null && s.scrub == null,
+                onClick = { if (s.readName && s.kind == Kind.Readout) s.launchSelected() else s.calendarTap() },
+                onLongClick = s::editSetup,
+            ),
         spacing = .04f,
+    )
+}
+
+
+/** Touch target for the clock in grid layouts. */
+@Composable
+fun GridClockTarget(s: LauncherState) {
+    if (s.ob != null || s.search || s.open != null || s.scrub != null || s.menu != null) return
+    val u = LocalUnits.current
+    val label = if (s.kind == Kind.Readout && s.readName) s.curApp()?.label.orEmpty() else stringResource(R.string.open_clock)
+    androidx.compose.foundation.layout.Box(
+        Modifier.place(u, 20f, s.readY).width(u.dp(372f)).height(u.dp(84f))
+            .semantics { contentDescription = label }
+            .combinedClickable(onClick = {
+                if (s.kind == Kind.Readout && s.readName) s.launchSelected() else s.clockTap()
+            }, onLongClick = s::editSetup),
     )
 }

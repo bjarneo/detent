@@ -18,6 +18,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -179,6 +180,7 @@ private fun Home(s: LauncherState) {
             Clock(s, pal)
             DialCanvas(s, pal)
         }
+        if (grid) GridClockTarget(s)
         // The readout layout shows the letter in its readout.
         if (s.kind != Kind.Readout) ScrubLetter(s, pal)
         PressRing(s, pal)
@@ -289,14 +291,15 @@ private fun GestureLayer(s: LauncherState) {
             }
             .pointerInput(s) {
                 awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val down = awaitFirstDown(requireUnconsumed = true)
                     val kk = k
-                    s.onDown(down.position.x / kk, down.position.y / kk)
+                    s.onDown(down.position.x / kk, down.position.y / kk, max(12f, viewConfiguration.touchSlop / kk))
                     var ended = false
                     try {
                         while (true) {
                             val ev = awaitPointerEvent()
                             val ch = ev.changes.firstOrNull { it.id == down.id } ?: break
+                            if (ch.isConsumed || ev.changes.count { it.pressed } > 1) break
                             if (ch.changedToUp() || !ch.pressed) {
                                 s.onUp(ch.position.x / kk, ch.position.y / kk)
                                 ended = true
@@ -353,8 +356,14 @@ private fun Clock(s: LauncherState, pal: Palette) {
             horizontalAlignment = if (s.left) Alignment.End else Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(u.dp(6f)),
         ) {
-            Txt(time, 68f, pal.fg, weight = FontWeight.Light, spacing = -.05f, line = 1f)
-            Txt(date, 13f, pal.muted2, spacing = .02f)
+            Txt(time, 68f, pal.fg, Modifier.combinedClickable(
+                enabled = s.ob == null && !s.search && s.open == null && s.scrub == null,
+                onClick = s::clockTap, onLongClick = s::editSetup,
+            ), weight = FontWeight.Light, spacing = -.05f, line = 1f)
+            Txt(date, 13f, pal.muted2, Modifier.height(u.dp(44f)).combinedClickable(
+                enabled = s.ob == null && !s.search && s.open == null && s.scrub == null,
+                onClick = s::calendarTap, onLongClick = s::editSetup,
+            ), spacing = .02f)
         }
     }
 }

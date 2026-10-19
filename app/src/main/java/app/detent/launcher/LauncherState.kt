@@ -63,6 +63,8 @@ interface Host {
     fun hasNotificationAccess(): Boolean
     fun openNotificationAccess()
     fun is24Hour(): Boolean
+    fun openClock(): Boolean
+    fun openCalendar(): Boolean
 
     /**
      * Sets the lock screen and system wallpaper off the main thread, then calls [done] on the main thread.
@@ -80,8 +82,9 @@ interface Host {
     fun cleanWallpapers(keep: String?)
 }
 
-private class Drag(val x0: Float, val y0: Float, var y: Float, val t0: Long, val zone: Zone) {
-    var moved = false
+private class Drag(val x0: Float, val y0: Float, var y: Float, val t0: Long, val zone: Zone, slop: Float) {
+    val intent = DialGesture(x0, y0, slop)
+    val moved get() = intent.moved
     var scrub = false
 
     /** True when the touch caught a turning dial. A tap then only stops the dial. */
@@ -576,11 +579,11 @@ class LauncherState(
         return if (k.roundToInt() == pos.roundToInt()) Zone.Selected else Zone.Dial
     }
 
-    fun onDown(x: Float, y: Float) {
+    fun onDown(x: Float, y: Float, slop: Float = 12f) {
         if (blocked()) return
         val zone = if (ob == null) zoneAt(x, y) else Zone.None
         val t = SystemClock.uptimeMillis()
-        val d = Drag(x, y, y, t, zone)
+        val d = Drag(x, y, y, t, zone, slop)
         d.caught = spin == Spin.Fling || spin == Spin.Wheel || (spin == Spin.Settle && abs(target - pos) > .3f)
         d.samples.addLast(t to pos)
         drag = d
@@ -591,7 +594,7 @@ class LauncherState(
             lsJob?.cancel()
             lsT = 1f
         }
-        if (kind == Kind.Readout && ob == null && scrub == null) showName()
+        if (kind == Kind.Readout && ob == null && scrub == null && zone != Zone.Empty) showName()
         if (zone != Zone.None) {
             press = Press(++seq, x, y)
             lpJob?.cancel()
@@ -605,11 +608,15 @@ class LauncherState(
 
     fun onMove(x: Float, y: Float) {
         val d = drag ?: return
-        if (!d.moved && (abs(y - d.y0) > 6 || abs(x - d.x0) > 6)) {
-            d.moved = true
-            cancelPress()
+        val wasDragging = d.intent.dragging
+        val dy = d.intent.move(x, y)
+        if (d.moved) cancelPress()
+        if (d.zone == Zone.Empty || !d.intent.dragging) return
+        if (!wasDragging) {
+            d.samples.clear()
+            d.samples.addLast(SystemClock.uptimeMillis() to pos)
         }
-        pos -= (y - d.y) / if (kind == Kind.Lens) LENS_GAP else GAP
+        pos -= dy / if (kind == Kind.Lens) LENS_GAP else GAP
         d.y = y
         val t = SystemClock.uptimeMillis()
         d.samples.addLast(t to pos)
@@ -617,6 +624,7 @@ class LauncherState(
     }
 
     fun onUp(x: Float, y: Float) {
+        onMove(x, y)
         cancelPress()
         val d = drag ?: return
         drag = null
@@ -626,10 +634,10 @@ class LauncherState(
             return
         }
         val t = SystemClock.uptimeMillis()
-        if (!d.moved && t - d.t0 < 450) {
+        if (!d.moved) {
             target = pos.roundToInt().toFloat()
             spin = Spin.Settle
-            if (!d.caught) tapAt(x, y)
+            if (!d.caught) tapAt(d.x0, d.y0)
             run()
             return
         }
@@ -729,9 +737,19 @@ class LauncherState(
         val k = (pos + atan2(dy, dx) / g.step).roundToInt()
         val cur = pos.roundToInt()
         if (abs(k - pos) > g.span) return
-        // The readout dial has no names to tap, so a tap on another row only turns the dial.
-        if (ob == null && (k == cur || kind != Kind.Readout)) {
+        // On named layouts an app opens only when its visible name is tapped.
+        if (ob == null && kind != Kind.Readout) {
+            if (dialApps.isEmpty()) return
+            val app = dialApps.getOrNull(mod(k, dialApps.size)) ?: return
+            val d = k - pos
+            val scale = labelScale(abs(d), app.display.length)
+            val label = labelPose(d, app.display.length, scale, g, layout.markers, left)
+            if (!labelContains(x, y, label, app.display.length, scale)) return
             if (k == cur) launchSelected() else launchAt(k)
+        } else if (ob == null && kind == Kind.Readout) {
+            fb.tick()
+            target = k.toFloat()
+            spin = Spin.Settle
         } else if (k != cur) {
             fb.tick()
             target = k.toFloat()
@@ -776,6 +794,24 @@ class LauncherState(
         spin = Spin.Settle
         followReadout()
         run()
+    }
+
+    fun clockTap() {
+        if (ob != null || blocked()) return
+        tap()
+        if (!host.openClock()) showToast(context.getString(R.string.clock_unavailable))
+    }
+
+    fun calendarTap() {
+        if (ob != null || blocked()) return
+        tap()
+        if (!host.openCalendar()) showToast(context.getString(R.string.calendar_unavailable))
+    }
+
+    fun editSetup() {
+        if (ob != null || blocked()) return
+        tap()
+        openSetup()
     }
 
     // Onboarding and the setup editor.
@@ -1194,8 +1230,6 @@ class LauncherState(
         val n = app.display.length
         val s = labelScale(abs(d), n)
         val p = labelPose(d, n, s, Geo(radius, cy, layout.ax), layout.markers, left)
-        target = k.toFloat()
-        spin = Spin.Settle
         openApp(app.display, app.key, app.pkgUser, Pose(p.x, p.y, p.rot, s * 15f / 44f, p.tx), "", true) {
             host.launchApp(app, it)
         }

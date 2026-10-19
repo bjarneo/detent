@@ -3,6 +3,7 @@ package app.detent.launcher
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.max
 import kotlin.math.min
@@ -216,6 +217,19 @@ fun labelRadius(g: Geo, m: Markers) = g.r - when (m) {
  */
 fun labelPose(d: Float, chars: Int, s: Float, g: Geo, m: Markers, left: Boolean) =
     labelPoseAt(d, chars, s, g, labelRadius(g, m), left)
+
+/** True when a point falls on the visible name, after undoing its rotation and scale. */
+fun labelContains(x: Float, y: Float, pose: LabelPose, chars: Int, scale: Float): Boolean {
+    val dx = x - pose.x
+    val dy = y - pose.y
+    val c = cos(pose.rot)
+    val sn = sin(pose.rot)
+    val localX = (dx * c + dy * sn) / scale
+    val localY = (-dx * sn + dy * c) / scale
+    val width = chars * CH
+    val left = pose.tx * width
+    return localX >= left - 3f && localX <= left + width + 3f && abs(localY) <= 11f
+}
 
 /** [labelPose] for labels at radius [r]. */
 fun labelPoseAt(d: Float, chars: Int, s: Float, g: Geo, r: Float, left: Boolean): LabelPose {

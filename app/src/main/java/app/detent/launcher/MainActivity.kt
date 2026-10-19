@@ -134,6 +134,15 @@ class MainActivity : ComponentActivity(), Host {
         if (detail == null || !open(detail)) open(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
     }
 
+    override fun openClock(): Boolean = open(Intent(android.provider.AlarmClock.ACTION_SHOW_ALARMS))
+
+    override fun openCalendar(): Boolean {
+        val uri = android.provider.CalendarContract.CONTENT_URI.buildUpon()
+            .appendPath("time").appendPath(System.currentTimeMillis().toString()).build()
+        return open(Intent(Intent.ACTION_VIEW, uri)) ||
+            open(Intent.makeMainSelectorActivity(Intent.ACTION_MAIN, Intent.CATEGORY_APP_CALENDAR))
+    }
+
     override fun is24Hour() = DateFormat.is24HourFormat(this)
 
     private fun screenSize(): Pair<Int, Int> = if (Build.VERSION.SDK_INT >= 30) {
@@ -178,6 +187,8 @@ class MainActivity : ComponentActivity(), Host {
         startActivity(intent)
         true
     } catch (e: ActivityNotFoundException) {
+        false
+    } catch (e: SecurityException) {
         false
     }
 }
