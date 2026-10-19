@@ -1,6 +1,8 @@
 package app.detent.launcher.ui
 
 import android.graphics.Paint
+import app.detent.launcher.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.animateFloatAsState
@@ -486,9 +488,9 @@ private fun GridDate(s: LauncherState, pal: Palette, alpha: Float) {
     val n = s.dialApps.size
     val text = if (s.readName && s.kind == Kind.Readout && s.scrub == null && n > 0) {
         val i = mod(s.index, n) + 1
-        i.toString().padStart(2, '0') + " / " + n + " · tap to open"
+        stringResource(R.string.tap_to_open_position, i.toString().padStart(2, '0'), n)
     } else {
-        "${DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]} ${cal.get(Calendar.DAY_OF_MONTH)} ${MONTHS[cal.get(Calendar.MONTH)]}"
+        java.text.SimpleDateFormat("EEE d MMM", java.util.Locale.getDefault()).format(cal.time).lowercase(java.util.Locale.getDefault())
     }
     Txt(
         text, 12f, pal.muted2,

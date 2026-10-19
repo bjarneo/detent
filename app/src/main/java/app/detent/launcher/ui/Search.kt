@@ -1,5 +1,8 @@
 package app.detent.launcher.ui
 
+import app.detent.launcher.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -115,20 +118,20 @@ fun SearchSheet(s: LauncherState, pal: Palette) {
                             },
                             contentAlignment = Alignment.CenterStart,
                         ) {
-                            if (q.isEmpty()) Txt(if (s.pick) "pick a quick app" else "search apps", 26f, pal.muted, weight = FontWeight.Light, spacing = -.03f, maxLines = 1)
+                            if (q.isEmpty()) Txt(if (s.pick) stringResource(R.string.pick_a_quick_app) else stringResource(R.string.search_apps), 20f, pal.muted, weight = FontWeight.Light, spacing = -.03f, maxLines = 1)
                             inner()
                         }
                     },
                 )
                 Box(Modifier.height(u.dp(44f)).tap { s.closeSearch() }.padding(horizontal = u.dp(10f)), contentAlignment = Alignment.Center) {
-                    Txt("cancel", 13f, pal.muted2)
+                    Txt(stringResource(R.string.cancel), 13f, pal.muted2)
                 }
             }
             val n = s.dialApps.size
             val count = when {
-                q.isNotBlank() -> "${results.size} " + if (results.size == 1) "match" else "matches"
-                s.pick -> "tap an app for the quick button"
-                else -> "${results.size} apps · $n on dial"
+                q.isNotBlank() -> pluralStringResource(R.plurals.matches, results.size, results.size)
+                s.pick -> stringResource(R.string.tap_an_app_for_the_quick_button)
+                else -> stringResource(R.string.count_apps_other_on_dial, results.size, n)
             }
             Row(
                 Modifier.fillMaxWidth().padding(start = u.dp(28f), top = u.dp(16f), end = u.dp(18f), bottom = u.dp(8f)),
@@ -137,7 +140,7 @@ fun SearchSheet(s: LauncherState, pal: Palette) {
                 Txt(count, 11f, pal.muted, Modifier.weight(1f), spacing = .06f, maxLines = 1)
                 if (s.pick && s.quickKey != null) {
                     Box(Modifier.height(u.dp(32f)).tap { s.clearQuick() }.padding(horizontal = u.dp(10f)), contentAlignment = Alignment.Center) {
-                        Txt("clear", 11f, pal.accent, spacing = .06f)
+                        Txt(stringResource(R.string.clear), 11f, pal.accent, spacing = .06f)
                     }
                 }
             }
@@ -175,9 +178,9 @@ private fun ResultRow(s: LauncherState, pal: Palette, app: AppEntry, highlight: 
             if (s.hasDot(app)) Box(Modifier.size(u.dp(5f)).clip(CircleShape).background(pal.accent))
         }
         if (s.pick) {
-            if (app.key == s.quickKey) Txt("quick app", 11f, pal.muted, Modifier.padding(horizontal = u.dp(16f)), spacing = .04f)
+            if (app.key == s.quickKey) Txt(stringResource(R.string.quick_app), 11f, pal.muted, Modifier.padding(horizontal = u.dp(16f)), spacing = .04f)
         } else if (onDial) {
-            Txt("on dial", 11f, pal.muted, Modifier.padding(horizontal = u.dp(16f)), spacing = .04f)
+            Txt(stringResource(R.string.on_dial), 11f, pal.muted, Modifier.padding(horizontal = u.dp(16f)), spacing = .04f)
         } else {
             Box(
                 Modifier.height(u.dp(44f)).tap { s.addToDial(app) }.padding(start = u.dp(4f), end = u.dp(8f)),
@@ -187,7 +190,7 @@ private fun ResultRow(s: LauncherState, pal: Palette, app: AppEntry, highlight: 
                 Box(
                     Modifier.height(u.dp(28f)).clip(shape).border(u.dp(1f), pal.rim2, shape).padding(horizontal = u.dp(12f)),
                     contentAlignment = Alignment.Center,
-                ) { Txt("+ dial", 11f, pal.fg, maxLines = 1) }
+                ) { Txt(stringResource(R.string.dial_message), 11f, pal.fg, maxLines = 1) }
             }
         }
     }

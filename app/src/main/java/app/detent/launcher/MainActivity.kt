@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity(), Host {
         super.onCreate(savedInstanceState)
         window.isNavigationBarContrastEnforced = false
         repo = AppsRepository(applicationContext)
-        state = LauncherState(this, repo, Prefs(applicationContext), Feedback(applicationContext), scope)
+        state = LauncherState(applicationContext, this, repo, Prefs(applicationContext), Feedback(applicationContext), scope)
         repo.start()
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() = state.back()

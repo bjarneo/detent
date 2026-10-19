@@ -1,5 +1,8 @@
 package app.detent.launcher.ui
 
+import app.detent.launcher.R
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -45,18 +48,20 @@ import kotlinx.coroutines.launch
 
 private class Copy(val counter: String, val title: String, val body: String)
 
+@Composable
 private fun copy(step: Int, custom: Boolean, grid: Boolean) = when (step) {
-    Step.WELCOME -> Copy("", "dial", "your apps sit on a wheel at the edge. turn it to choose, tap to open.")
-    Step.SHAPE -> Copy("1 / 4", "shape", "pick a layout and a side, then turn the dial to try it.")
-    Step.THEME -> if (grid) Copy("2 / 4", "theme", "turn the dial to pick the colours of the grid.")
-    else if (custom) Copy("2 / 4", "theme", "turn the dial to pick the colours. your wallpaper stays.")
-    else Copy("2 / 4", "theme", "turn the dial to try one. each brings its own wallpaper.")
-    Step.APPS -> Copy("3 / 4", "apps", "pick what goes on the dial. the rest stay one search away.")
-    Step.FEEL -> Copy("4 / 4", "feel", "a click and a tick for every detent. dots mark new notifications. the lock screen can use the theme.")
-    else -> Copy("", "ready", "hold the clock to change your setup. hold an app for shortcuts, or the dial to jump by letter.")
+    Step.WELCOME -> Copy("", stringResource(R.string.dial), stringResource(R.string.your_apps_sit_on_a_wheel_at_the_edge_turn_it_to_choose_tap_to_open))
+    Step.SHAPE -> Copy("1 / 4", stringResource(R.string.shape), stringResource(R.string.pick_a_layout_and_a_side_then_turn_the_dial_to_try_it))
+    Step.THEME -> if (grid) Copy("2 / 4", stringResource(R.string.theme), stringResource(R.string.turn_the_dial_to_pick_the_colours_of_the_grid))
+    else if (custom) Copy("2 / 4", stringResource(R.string.theme), stringResource(R.string.turn_the_dial_to_pick_the_colours_your_wallpaper_stays))
+    else Copy("2 / 4", stringResource(R.string.theme), stringResource(R.string.turn_the_dial_to_try_one_each_brings_its_own_wallpaper))
+    Step.APPS -> Copy("3 / 4", stringResource(R.string.apps), stringResource(R.string.pick_what_goes_on_the_dial_the_rest_stay_one_search_away))
+    Step.FEEL -> Copy("4 / 4", stringResource(R.string.feel), stringResource(R.string.a_click_and_a_tick_for_every_detent_dots_mark_new_notifications_the_lock_screen_can_use_the_theme))
+    else -> Copy("", stringResource(R.string.ready), stringResource(R.string.hold_the_clock_to_change_your_setup_hold_an_app_for_shortcuts_or_the_dial_to_jump_by_letter))
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 fun Onboarding(s: LauncherState, pal: Palette, theme: ThemeDef) {
     val u = LocalUnits.current
     val step = s.ob ?: return
@@ -111,42 +116,42 @@ fun Onboarding(s: LauncherState, pal: Palette, theme: ThemeDef) {
                         }
                     }
                     Row(horizontalArrangement = gap) {
-                        Chip("dial right", s.cfg.side == Side.Right, pal, { s.setSide(Side.Right) })
-                        Chip("dial left", s.cfg.side == Side.Left, pal, { s.setSide(Side.Left) })
+                        Chip(stringResource(R.string.dial_right), s.cfg.side == Side.Right, pal, { s.setSide(Side.Right) })
+                        Chip(stringResource(R.string.dial_left), s.cfg.side == Side.Left, pal, { s.setSide(Side.Left) })
                     }
                 }
                 Step.THEME -> {
                     Row(horizontalArrangement = gap) {
-                        Chip("phone", theme.group == "phone", pal, { s.jumpGroup("phone") }, weight = FontWeight.Medium)
+                        Chip(stringResource(R.string.phone), theme.group == "phone", pal, { s.jumpGroup("phone") }, weight = FontWeight.Medium)
                         Chip("omarchy", theme.group == "omarchy", pal, { s.jumpGroup("omarchy") }, weight = FontWeight.Medium)
                     }
                     // The grid layouts have no wallpaper.
                     if (!s.layout.grid) Row(horizontalArrangement = gap) {
-                        Chip("theme wallpaper", s.customWall == null, pal, { s.useThemeWallpaper() })
-                        Chip("your wallpaper", s.customWall != null, pal, { s.pickWallpaper() })
+                        Chip(stringResource(R.string.theme_wallpaper), s.customWall == null, pal, { s.useThemeWallpaper() })
+                        Chip(stringResource(R.string.your_wallpaper), s.customWall != null, pal, { s.pickWallpaper() })
                     }
                 }
-                Step.FEEL -> Row(Modifier.padding(top = u.dp(42f)), horizontalArrangement = gap) {
-                    Chip("sound", s.sound, pal, { s.toggleSound() })
-                    Chip("haptics", s.haptics, pal, { s.toggleHaptics() })
-                    Chip("dots", s.dots && s.notifAccess, pal, { s.toggleDots() })
-                    Chip("lock screen", s.lockWall, pal, { s.toggleLockWall() })
+                Step.FEEL -> FlowRow(Modifier.padding(top = u.dp(42f)), horizontalArrangement = gap) {
+                    Chip(stringResource(R.string.sound), s.sound, pal, { s.toggleSound() })
+                    Chip(stringResource(R.string.haptics), s.haptics, pal, { s.toggleHaptics() })
+                    Chip(stringResource(R.string.dots), s.dots && s.notifAccess, pal, { s.toggleDots() })
+                    Chip(stringResource(R.string.lock_screen), s.lockWall, pal, { s.toggleLockWall() })
                 }
                 Step.READY -> if (!s.isHome) Row(Modifier.padding(top = u.dp(42f))) {
-                    Chip("set as home app", false, pal, { s.requestHome() })
+                    Chip(stringResource(R.string.set_as_home_app), false, pal, { s.requestHome() })
                 }
             }
             val pick = when (step) {
-                Step.SHAPE -> LAYOUTS[s.cfg.layout].name
+                Step.SHAPE -> stringResource(LAYOUTS[s.cfg.layout].name)
                 // The readout dial has no names, so the theme name goes here.
                 Step.THEME -> (if (s.kind == Kind.Readout) theme.name + " · " else "") +
-                    theme.group + " · " + if (theme.light) "light" else "dark"
+                    (if (theme.group == "phone") stringResource(R.string.phone) else theme.group) + " · " + if (theme.light) stringResource(R.string.light) else stringResource(R.string.dark)
                 Step.FEEL -> when {
-                    s.dots && !s.notifAccess -> "dots need notification access"
-                    s.lockWall -> "the lock screen uses the theme"
+                    s.dots && !s.notifAccess -> stringResource(R.string.dots_need_notification_access)
+                    s.lockWall -> stringResource(R.string.the_lock_screen_uses_the_theme)
                     else -> ""
                 }
-                Step.READY -> if (s.isHome) "detent is your home app" else ""
+                Step.READY -> if (s.isHome) stringResource(R.string.detent_is_your_home_app) else ""
                 else -> ""
             }
             Txt(pick, 12f, pal.fg, Modifier.heightIn(min = u.dp(16f)), spacing = .02f)
@@ -179,7 +184,7 @@ private fun AppChips(s: LauncherState, pal: Palette, enter: Modifier, bottom: Fl
         val warn = s.warn
         val color by animateColorAsState(if (warn) pal.accent else pal.muted2, tween(200), label = "countColor")
         Txt(
-            if (warn) "keep at least 3 on the dial" else "$n on the dial · ${all.size - n} in search",
+            if (warn) stringResource(R.string.keep_at_least_3_on_the_dial) else stringResource(R.string.count_on_the_dial_other_in_search, n, all.size - n),
             12f, color, Modifier.padding(horizontal = u.dp(4f)),
         )
     }
@@ -189,12 +194,12 @@ private fun AppChips(s: LauncherState, pal: Palette, enter: Modifier, bottom: Fl
 private fun Nav(s: LauncherState, pal: Palette, step: Int) {
     val u = LocalUnits.current
     val showBack = step != Step.WELCOME && step != Step.READY
-    val back = if (step == Step.SHAPE && s.obEdit) "cancel" else "back"
+    val back = if (step == Step.SHAPE && s.obEdit) stringResource(R.string.cancel) else stringResource(R.string.back)
     val next = when (step) {
-        Step.WELCOME -> "begin"
-        Step.FEEL -> if (s.obEdit) "done" else "next"
-        Step.READY -> "go home"
-        else -> "next"
+        Step.WELCOME -> stringResource(R.string.begin)
+        Step.FEEL -> if (s.obEdit) stringResource(R.string.done) else stringResource(R.string.next)
+        Step.READY -> stringResource(R.string.go_home)
+        else -> stringResource(R.string.next)
     }
     Box(Modifier.fillMaxWidth().place(u, 16f, u.navY).padding(end = u.dp(44f)).height(u.dp(44f))) {
         if (showBack) {

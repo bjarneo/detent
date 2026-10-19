@@ -34,7 +34,7 @@ enum class Kind { Radial, Field, Lens, Readout }
 
 // Radial labels follow the angle of their row.
 class Layout(
-    val name: String,
+    val name: Int,
     val radius: Float,
     val markers: Markers,
     val ticksPerApp: Int,
@@ -55,14 +55,14 @@ class Layout(
 }
 
 val LAYOUTS = listOf(
-    Layout("soft · radial · double", 330f, Markers.Double, 4),
-    Layout("round · radial · double", 200f, Markers.Double, 5),
-    Layout("soft · radial · ticks", 330f, Markers.Ticks, 4),
-    Layout("flat · radial · dots", 560f, Markers.Dots, 6),
-    Layout("flat · radial · nodes", 560f, Markers.Nodes, 4),
-    Layout("grid · field", 300f, Markers.Double, 1, Kind.Field),
-    Layout("grid · lens", 300f, Markers.Double, 1, Kind.Lens),
-    Layout("grid · readout", 200f, Markers.Double, 1, Kind.Readout),
+    Layout(R.string.soft_radial_double, 330f, Markers.Double, 4),
+    Layout(R.string.round_radial_double, 200f, Markers.Double, 5),
+    Layout(R.string.soft_radial_ticks, 330f, Markers.Ticks, 4),
+    Layout(R.string.flat_radial_dots, 560f, Markers.Dots, 6),
+    Layout(R.string.flat_radial_nodes, 560f, Markers.Nodes, 4),
+    Layout(R.string.grid_field, 300f, Markers.Double, 1, Kind.Field),
+    Layout(R.string.grid_lens, 300f, Markers.Double, 1, Kind.Lens),
+    Layout(R.string.grid_readout, 200f, Markers.Double, 1, Kind.Readout),
 )
 
 // The grid layouts. Grid dots sit every G units, starting GO units from the top left corner.

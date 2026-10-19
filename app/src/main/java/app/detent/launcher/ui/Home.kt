@@ -1,5 +1,7 @@
 package app.detent.launcher.ui
 
+import app.detent.launcher.R
+import androidx.compose.ui.res.stringResource
 import android.app.Activity
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -114,8 +116,6 @@ import java.util.Calendar
 import kotlin.math.max
 import kotlin.math.min
 
-internal val DAYS = listOf("sun", "mon", "tue", "wed", "thu", "fri", "sat")
-internal val MONTHS = listOf("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec")
 
 @Composable
 fun DetentRoot(s: LauncherState) {
@@ -347,7 +347,7 @@ private fun Clock(s: LauncherState, pal: Palette) {
         (cal.get(Calendar.HOUR).takeIf { it != 0 } ?: 12).toString()
     }
     val time = hour + ":" + cal.get(Calendar.MINUTE).toString().padStart(2, '0')
-    val date = "${DAYS[cal.get(Calendar.DAY_OF_WEEK) - 1]} ${cal.get(Calendar.DAY_OF_MONTH)} ${MONTHS[cal.get(Calendar.MONTH)]}"
+    val date = java.text.SimpleDateFormat("EEE d MMM", java.util.Locale.getDefault()).format(cal.time).lowercase(java.util.Locale.getDefault())
     SideBox(s.left, u.clockTop, 28f, Modifier.graphicsLayer { this.alpha = alpha }) {
         Column(
             horizontalAlignment = if (s.left) Alignment.End else Alignment.Start,
@@ -380,7 +380,7 @@ private fun SearchButton(s: LauncherState, pal: Palette) {
                 drawCircle(pal.fg, 4.25f * k, Offset(5f * k, 5f * k), style = Stroke(1.5f * k))
                 drawLine(pal.fg, Offset(8.5f * k, 8.5f * k), Offset(12.74f * k, 12.74f * k), strokeWidth = 1.5f * k)
             }
-            Txt("search", 13f, pal.fg)
+            Txt(stringResource(R.string.search), 13f, pal.fg)
         }
     }
 }
@@ -422,7 +422,7 @@ private fun QuickButton(s: LauncherState, pal: Palette) {
                 }
             }
             Txt(
-                app?.display ?: "quick app", 13f, pal.fg,
+                app?.display ?: stringResource(R.string.quick_app), 13f, pal.fg,
                 Modifier.onGloballyPositioned {
                     val p = it.positionInRoot()
                     label = Offset(p.x / u.k, (p.y + it.size.height / 2f) / u.k)
@@ -503,7 +503,7 @@ private fun ToastView(s: LauncherState, pal: Palette) {
                 Txt(t.text, 12f, pal.fg, maxLines = 1)
                 if (t.undo != null) {
                     Box(Modifier.height(u.dp(44f)).tap { s.undo() }.padding(horizontal = u.dp(14f)), contentAlignment = Alignment.Center) {
-                        Txt("undo", 12f, pal.accent, weight = FontWeight.Medium)
+                        Txt(stringResource(R.string.undo), 12f, pal.accent, weight = FontWeight.Medium)
                     }
                 } else {
                     Spacer(Modifier.width(u.dp(14f)))
@@ -546,8 +546,8 @@ private fun QuickMenuView(s: LauncherState, pal: Palette) {
                 MenuItem(label, pal.fg) { s.menuShortcut(info) }
             }
             if (m.shortcuts.isNotEmpty()) Box(Modifier.fillMaxWidth().height(u.dp(1f)).background(pal.rim))
-            MenuItem("app info", pal.muted2) { s.menuInfo() }
-            MenuItem("remove from dial", pal.muted2) { s.menuRemove() }
+            MenuItem(stringResource(R.string.app_info), pal.muted2) { s.menuInfo() }
+            MenuItem(stringResource(R.string.remove_from_dial), pal.muted2) { s.menuRemove() }
         }
     }
 }

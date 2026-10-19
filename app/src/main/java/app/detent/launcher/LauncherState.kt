@@ -100,6 +100,7 @@ object Step {
 }
 
 class LauncherState(
+    private val context: android.content.Context,
     private val host: Host,
     val repo: AppsRepository,
     private val prefs: Prefs,
@@ -837,7 +838,7 @@ class LauncherState(
         val key = "${THEMES[cfg.theme].name}|${cfg.side}|${if (grid) "grid" else custom ?: "theme"}"
         if (prefs.appliedWall == key) return
         host.setWallpaper(THEMES[cfg.theme], PALETTES[cfg.theme], left, custom, grid) { ok ->
-            if (ok) prefs.appliedWall = key else showToast("can't set the lock screen")
+            if (ok) prefs.appliedWall = key else showToast(context.getString(R.string.can_t_set_the_lock_screen))
         }
     }
 
@@ -846,7 +847,7 @@ class LauncherState(
         tap()
         host.pickWallpaper { path, failed ->
             if (path != null) customWall = path
-            else if (failed) showToast("can't open that image")
+            else if (failed) showToast(context.getString(R.string.can_t_open_that_image))
         }
     }
 
@@ -1025,14 +1026,14 @@ class LauncherState(
         fb.double()
         fb.click(false)
         setAppsKeep(before + app.key)
-        showToast("added ${app.display} to the dial") { setAppsKeep(before) }
+        showToast(context.getString(R.string.added_app_to_the_dial, app.display)) { setAppsKeep(before) }
     }
 
     private fun removeFromDial(app: AppEntry) {
         val before = dialKeys
         if (dialApps.size <= 3) {
             fb.refuse()
-            showToast("keep at least 3 on the dial")
+            showToast(context.getString(R.string.keep_at_least_3_on_the_dial_message))
             return
         }
         fb.double()
@@ -1042,7 +1043,7 @@ class LauncherState(
         reindex(mod(mod(pos.roundToInt(), size), size - 1))
         dialKeys = before - app.key
         persist()
-        showToast("removed ${app.display}") { setAppsKeep(before) }
+        showToast(context.getString(R.string.removed_app, app.display)) { setAppsKeep(before) }
     }
 
     // Quick actions: hold the selected app.
@@ -1079,7 +1080,7 @@ class LauncherState(
     }
 
     fun menuInfo() = afterMenu(120) { app ->
-        openApp(app.display, app.key, null, selectedPose() ?: return@afterMenu, "app info", true) {
+        openApp(app.display, app.key, null, selectedPose() ?: return@afterMenu, context.getString(R.string.app_info_message), true) {
             host.showAppInfo(app, it)
         }
     }
@@ -1151,7 +1152,7 @@ class LauncherState(
         fb.click(false)
         saveQuick(app.key)
         search = false
-        if (before != app.key) showToast("${app.display} is on the quick button") { saveQuick(before) }
+        if (before != app.key) showToast(context.getString(R.string.app_is_on_the_quick_button, app.display)) { saveQuick(before) }
     }
 
     fun clearQuick() {
@@ -1160,7 +1161,7 @@ class LauncherState(
         fb.click(false)
         saveQuick(null)
         search = false
-        showToast("cleared the quick button") { saveQuick(before) }
+        showToast(context.getString(R.string.cleared_the_quick_button)) { saveQuick(before) }
     }
 
     private fun saveQuick(key: String?) {
@@ -1235,7 +1236,7 @@ class LauncherState(
             action(if (grid) dotBounds(rx, ry) else boundsOf(from, label))
         } catch (e: Exception) {
             open = null
-            showToast("can't open $label")
+            showToast(context.getString(R.string.can_t_open_app, label))
         }
     }
 
