@@ -285,6 +285,10 @@ class LauncherState(
         private set
     var lockWall by mutableStateOf(prefs.lockWall)
         private set
+    var voice by mutableStateOf(prefs.voice)
+        private set
+    var webSearch by mutableStateOf(prefs.webSearch)
+        private set
 
     /** True when Detent hides the Android status bar and shows battery, wifi, and signal itself. */
     var ownBar by mutableStateOf(prefs.ownBar)
@@ -1094,6 +1098,18 @@ class LauncherState(
             dots = !dots
             prefs.dots = dots
         }
+    }
+
+    fun toggleVoice() {
+        tap()
+        voice = !voice
+        prefs.voice = voice
+    }
+
+    fun toggleWebSearch() {
+        tap()
+        webSearch = !webSearch
+        prefs.webSearch = webSearch
     }
 
     fun requestHome() {

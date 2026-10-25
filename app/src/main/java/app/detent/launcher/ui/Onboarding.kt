@@ -52,7 +52,7 @@ private fun copy(step: Int, custom: Boolean, grid: Boolean) = when (step) {
     else if (custom) Copy("2 / 4", "theme", "turn the dial to pick the colours. your wallpaper stays.")
     else Copy("2 / 4", "theme", "turn the dial to try one. each brings its own wallpaper.")
     Step.APPS -> Copy("3 / 4", "apps", "pick what goes on the dial. the rest stay one search away.")
-    Step.FEEL -> Copy("4 / 4", "feel", "a click and a tick for every detent. dots mark new notifications. detent can draw the bar at the top.")
+    Step.FEEL -> Copy("4 / 4", "feel", "a click and a tick for every detent. dots mark new notifications. pick the bar at the top and the buttons at the bottom.")
     else -> Copy("", "ready", "drag up from the bottom to search. hold the clock to change your setup. hold an app for shortcuts, or the dial to jump by letter.")
 }
 
@@ -76,7 +76,8 @@ fun Onboarding(s: LauncherState, pal: Palette, theme: ThemeDef) {
         translationY = (1 - rise.value) * 8f * u.k
     }
 
-    val controlsY = u.navY - 170f
+    // The feel step has one more row of chips.
+    val controlsY = u.navY - if (step == Step.FEEL) 218f else 170f
     Box(Modifier.fillMaxSize()) {
         if (step == Step.APPS) Box(Modifier.fillMaxSize().background(pal.veil))
         if (step == Step.SHAPE || step == Step.THEME || step == Step.FEEL) {
@@ -139,6 +140,10 @@ fun Onboarding(s: LauncherState, pal: Palette, theme: ThemeDef) {
                     Row(horizontalArrangement = gap) {
                         Chip("system bar", !s.ownBar, pal, { s.setBar(false) })
                         Chip("detent bar", s.ownBar, pal, { s.setBar(true) })
+                    }
+                    Row(horizontalArrangement = gap) {
+                        Chip("voice", s.voice, pal, { s.toggleVoice() })
+                        Chip("web search", s.webSearch, pal, { s.toggleWebSearch() })
                     }
                 }
                 Step.READY -> if (!s.isHome) Row(Modifier.padding(top = u.dp(42f))) {

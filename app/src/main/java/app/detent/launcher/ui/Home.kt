@@ -512,6 +512,7 @@ private fun VoiceButton(s: LauncherState, pal: Palette, idle: Boolean) {
 /**
  * The buttons in the bottom corner on the dial side: up to 3 quick buttons, the web button, and the voice button
  * at the screen edge. The first quick button sits next to the web button. A drag up from the bottom opens search.
+ * The feel step turns the web button and the voice button on and off.
  */
 @Composable
 private fun CornerButtons(s: LauncherState, pal: Palette) {
@@ -523,8 +524,8 @@ private fun CornerButtons(s: LauncherState, pal: Palette) {
     SideBox(!s.left, u.buttonY, 24f, Modifier.graphicsLayer { this.alpha = alpha; translationY = dy * u.k }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(u.dp(10f))) {
             if (s.left) {
-                VoiceButton(s, pal, homeIdle)
-                WebButton(s, pal, homeIdle)
+                if (s.voice) VoiceButton(s, pal, homeIdle)
+                if (s.webSearch) WebButton(s, pal, homeIdle)
             }
             val quick = s.quickApps
             if (quick.isEmpty()) AddQuickButton(s, pal, homeIdle)
@@ -532,8 +533,8 @@ private fun CornerButtons(s: LauncherState, pal: Palette) {
             val solo = quick.size == 1
             for (q in if (s.left) quick else quick.asReversed()) key(q.app.key) { QuickButton(s, pal, homeIdle, q, solo) }
             if (!s.left) {
-                WebButton(s, pal, homeIdle)
-                VoiceButton(s, pal, homeIdle)
+                if (s.webSearch) WebButton(s, pal, homeIdle)
+                if (s.voice) VoiceButton(s, pal, homeIdle)
             }
         }
     }

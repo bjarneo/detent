@@ -42,7 +42,7 @@ adb install detent.apk
 | Tap the web button and type | Press `Enter` or tap `search`. Your default browser searches the web with its own search engine. If the browser takes no web search, Android gives the words to a search app, such as Google, or asks you to pick one. Detent has no internet permission. It only hands the words over. |
 | Drag down from the top of the screen | The notifications open. The drag starts above the clock. |
 
-The quick buttons sit in the bottom corner on the dial side. They hold up to 3 apps that you need fast, such as the camera. Each button shows an icon that you pick, and Detent marks the icon that fits the app. With 1 quick app, the button can show the app name. With 2 or 3, a button without an icon shows the first letter of the name. The web button sits next to the quick buttons, and the mic button sits at the screen edge.
+The quick buttons sit in the bottom corner on the dial side. They hold up to 3 apps that you need fast, such as the camera. Each button shows an icon that you pick, and Detent marks the icon that fits the app. With 1 quick app, the button can show the app name. With 2 or 3, a button without an icon shows the first letter of the name. The web button sits next to the quick buttons, and the mic button sits at the screen edge. To hide the mic button or the web button, turn off `voice` or `web search` on the `feel` step.
 
 Detent suggests changes to the dial. If you open an app from search 3 times in a week, a card asks you to add it to the dial. If you do not open a dial app from the home screen for 3 weeks, a card asks you to remove it. Tap `not now` or `keep` to hide the card for that app. Detent shows 1 card a day at most. It counts the opens on the phone only.
 
@@ -98,7 +98,7 @@ Detent crops the centre of the photo to the shape of your screen and keeps a cop
 
 ## Settings
 
-The `feel` step has 4 switches and a choice of status bar.
+The `feel` step has 6 switches and a choice of status bar.
 
 | Switch | What it does |
 | --- | --- |
@@ -106,6 +106,8 @@ The `feel` step has 4 switches and a choice of status bar.
 | `haptics` | Gives a light tick for each app and a firmer tick for each letter. It follows the system touch feedback setting. |
 | `dots` | Shows an accent dot on apps with new notifications. The dot clears when you open the app. This switch needs notification access. |
 | `lock screen` | Sets the lock screen and the system wallpaper to the theme. On the grid layouts, it sets the dot grid. Android then takes the lock screen colours from it. |
+| `voice` | Shows the mic button in the bottom corner. |
+| `web search` | Shows the web button in the bottom corner. |
 
 | Status bar | What it shows |
 | --- | --- |

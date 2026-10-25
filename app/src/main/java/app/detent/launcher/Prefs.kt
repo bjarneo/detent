@@ -47,6 +47,16 @@ class Prefs(ctx: Context) {
         get() = sp.getBoolean("dots", true)
         set(v) = sp.edit { putBoolean("dots", v) }
 
+    /** Shows the mic button in the bottom corner. */
+    var voice: Boolean
+        get() = sp.getBoolean("voice", true)
+        set(v) = sp.edit { putBoolean("voice", v) }
+
+    /** Shows the web button in the bottom corner. */
+    var webSearch: Boolean
+        get() = sp.getBoolean("webSearch", true)
+        set(v) = sp.edit { putBoolean("webSearch", v) }
+
     /** Sets the lock screen and the system wallpaper to the theme. */
     var lockWall: Boolean
         get() = sp.getBoolean("lockWall", true)
